@@ -224,6 +224,23 @@ textarea { resize:vertical; min-height:80px; line-height:1.6; }
 .status-select { font-size:.78rem; }
 .status-select option { background: var(--bg); }
 
+/* ── CHECKLIST ── */
+.checklist { list-style:none; padding:0; display:flex; flex-direction:column; gap:.3rem; }
+.checklist li { display:flex; align-items:center; gap:.55rem; }
+.checklist input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); flex-shrink:0; cursor:pointer; }
+.checklist label { font-size:.83rem; color:var(--fg); cursor:pointer; line-height:1.4; }
+
+/* ── CASE GRID ── */
+.case-grid { display:grid; grid-template-columns: 28px 1fr 1fr; gap:.35rem; }
+.case-num { font-family:var(--mono); font-size:.7rem; font-weight:700; color:var(--fg-dim); display:flex; align-items:center; }
+.case-grid input[type=text] { font-size:.82rem; }
+
+/* ── GRADE RATING ── */
+.rating-row { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.35rem; }
+.rating-opt { display:flex; align-items:center; gap:.35rem; font-size:.82rem; padding:.3rem .65rem; border-radius:5px; cursor:pointer; border:1px solid var(--border); transition:all .15s; }
+.rating-opt:has(input:checked) { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); }
+.rating-opt input { width:14px; height:14px; accent-color:var(--accent); }
+
 /* ── HISTORY ── */
 .history-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:.75rem; }
 .hist-card {
@@ -429,6 +446,13 @@ textarea { resize:vertical; min-height:80px; line-height:1.6; }
           <span class="calc-result" id="precisionRevenue">0만원</span>
         </div>
       </div>
+      <!-- 구 정책 비교 -->
+      <div style="background:var(--bg-sub); border-radius:6px; padding:.75rem 1rem; margin:.2rem 0 .4rem; display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; align-items:center;">
+        <span style="font-size:.72rem; font-weight:700; color:var(--fg-dim); text-transform:uppercase; letter-spacing:.07em; white-space:nowrap;">구 정책 비교 (12만원 기준)</span>
+        <span style="font-size:.82rem; color:var(--fg-mid);">예전이었다면: <strong id="oldPolicyRev" style="font-family:var(--mono);">0만원</strong></span>
+        <span style="font-size:.82rem;">Care 정책 효과: <strong id="policyDiff" style="font-family:var(--mono); color:var(--ok);">+0만원</strong></span>
+        <span style="font-size:.75rem; color:var(--fg-dim);" id="policyDiffPct"></span>
+      </div>
       <div class="divider"></div>
       <div class="field-row">
         <span class="field-label">신규 계약</span>
@@ -529,6 +553,102 @@ textarea { resize:vertical; min-height:80px; line-height:1.6; }
         <div class="field-input-wrap">
           <input type="number" id="additionalRevenue" min="0" value="0" oninput="calcRevenue()">
           <span class="unit">만원</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: 서비스 등급 분류 검토 -->
+  <div class="card">
+    <div class="card-head"><h3>🎯 서비스 등급 분류 검토</h3><span style="font-size:.72rem;color:var(--fg-dim);font-weight:500;">15분</span></div>
+    <div class="card-body">
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.35rem">등급 분류 일관성</span>
+        <div class="field-input-wrap radio-group">
+          <label class="rating-opt"><input type="radio" name="consistency" value="high"> 일치 잘 됨</label>
+          <label class="rating-opt"><input type="radio" name="consistency" value="mid"> 일부 불일치</label>
+          <label class="rating-opt"><input type="radio" name="consistency" value="low"> 불일치 잦음</label>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">애매했던 케이스</span>
+        <div class="field-input-wrap">
+          <textarea id="ambiguousCases" placeholder="예) ATC 오류 + Backlash 측정 필요 → Basic vs Precision 논의"></textarea>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">합의된 판단 기준</span>
+        <div class="field-input-wrap">
+          <textarea id="gradeDecision" placeholder="이번 미팅에서 새로 정리된 기준을 기록합니다."></textarea>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Precision→Basic 하향</span>
+        <div class="field-input-wrap">
+          <input type="number" id="basicDowngrade" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Basic→Precision 상향</span>
+        <div class="field-input-wrap">
+          <input type="number" id="precUpgrade" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: 고객 반발 현황 -->
+  <div class="card">
+    <div class="card-head"><h3>⚠️ 고객 반발 현황</h3><span style="font-size:.72rem;color:var(--fg-dim);font-weight:500;">15분</span></div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="field-label">고객 이의 제기</span>
+        <div class="field-input-wrap">
+          <input type="number" id="complaintCnt" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">팀장 에스컬레이션</span>
+        <div class="field-input-wrap">
+          <input type="number" id="escalateCnt" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.3rem">발생한 반발 유형</span>
+        <div class="field-input-wrap">
+          <ul class="checklist">
+            <li><input type="checkbox" id="c1"><label for="c1">"예전엔 12만원이었는데요" 가격 인상 항의</label></li>
+            <li><input type="checkbox" id="c2"><label for="c2">"그냥 Basic으로 해주세요" 등급 요구</label></li>
+            <li><input type="checkbox" id="c3"><label for="c3">부품비 별도 청구 불만</label></li>
+            <li><input type="checkbox" id="c4"><label for="c4">동의서·리포트 서명 거부</label></li>
+            <li><input type="checkbox" id="c5"><label for="c5">경쟁사 가격 비교</label></li>
+            <li><input type="checkbox" id="c6"><label for="c6">가격 협상 요구 (할인·조정)</label></li>
+            <li><input type="checkbox" id="c7"><label for="c7">사전 공지 미수신 항의</label></li>
+            <li><input type="checkbox" id="c8"><label for="c8">기타</label></li>
+          </ul>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.3rem">대응 케이스</span>
+        <div class="field-input-wrap">
+          <div class="case-grid" style="margin-bottom:.2rem;">
+            <div></div>
+            <div style="font-size:.7rem;color:var(--fg-dim);font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding-bottom:2px;">상황 요약</div>
+            <div style="font-size:.7rem;color:var(--fg-dim);font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding-bottom:2px;">효과적이었던 대응 멘트</div>
+          </div>
+          <div class="case-grid"><div class="case-num">01</div><input type="text" id="case1Sit" placeholder="어떤 반발이었나?"><input type="text" id="case1Res" placeholder="어떻게 설명했나?"></div>
+          <div class="case-grid" style="margin-top:.25rem;"><div class="case-num">02</div><input type="text" id="case2Sit" placeholder="어떤 반발이었나?"><input type="text" id="case2Res" placeholder="어떻게 설명했나?"></div>
+          <div class="case-grid" style="margin-top:.25rem;"><div class="case-num">03</div><input type="text" id="case3Sit" placeholder="어떤 반발이었나?"><input type="text" id="case3Res" placeholder="어떻게 설명했나?"></div>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">어려웠던 케이스</span>
+        <div class="field-input-wrap">
+          <textarea id="hardCase" placeholder="어떤 고객이었나, 어떻게 대응했고 어떻게 마무리됐는지 기록합니다."></textarea>
         </div>
       </div>
     </div>
@@ -810,6 +930,25 @@ function collectData() {
       consumable: Number(document.getElementById('consumableRevenue').value) || 0,
       additional: Number(document.getElementById('additionalRevenue').value) || 0,
     },
+    gradeReview: {
+      consistency: (document.querySelector('input[name=consistency]:checked') || {}).value || '',
+      ambiguousCases: document.getElementById('ambiguousCases').value,
+      gradeDecision: document.getElementById('gradeDecision').value,
+      basicDowngrade: Number(document.getElementById('basicDowngrade').value) || 0,
+      precUpgrade: Number(document.getElementById('precUpgrade').value) || 0,
+    },
+    complaints: {
+      complaintCnt: Number(document.getElementById('complaintCnt').value) || 0,
+      escalateCnt: Number(document.getElementById('escalateCnt').value) || 0,
+      types: [1,2,3,4,5,6,7,8].map(i => document.getElementById('c'+i).checked),
+      case1Sit: document.getElementById('case1Sit').value,
+      case1Res: document.getElementById('case1Res').value,
+      case2Sit: document.getElementById('case2Sit').value,
+      case2Res: document.getElementById('case2Res').value,
+      case3Sit: document.getElementById('case3Sit').value,
+      case3Res: document.getElementById('case3Res').value,
+      hardCase: document.getElementById('hardCase').value,
+    },
     notes: {
       nextMonthGoals: document.getElementById('nextMonthGoals').value,
       special: document.getElementById('specialNotes').value,
@@ -845,6 +984,28 @@ function applyData(data) {
   document.getElementById('nextMonthGoals').value = n.nextMonthGoals || '';
   document.getElementById('specialNotes').value = n.special || '';
   setMachineData(data.machines || []);
+  // grade review
+  const g = data.gradeReview || {};
+  if (g.consistency) {
+    const r = document.querySelector(`input[name=consistency][value="${g.consistency}"]`);
+    if (r) r.checked = true;
+  }
+  document.getElementById('ambiguousCases').value = g.ambiguousCases || '';
+  document.getElementById('gradeDecision').value  = g.gradeDecision  || '';
+  document.getElementById('basicDowngrade').value  = g.basicDowngrade || 0;
+  document.getElementById('precUpgrade').value     = g.precUpgrade    || 0;
+  // complaints
+  const cp = data.complaints || {};
+  document.getElementById('complaintCnt').value = cp.complaintCnt || 0;
+  document.getElementById('escalateCnt').value  = cp.escalateCnt  || 0;
+  if (Array.isArray(cp.types)) cp.types.forEach((v,i) => { const el = document.getElementById('c'+(i+1)); if(el) el.checked = !!v; });
+  document.getElementById('case1Sit').value = cp.case1Sit || '';
+  document.getElementById('case1Res').value = cp.case1Res || '';
+  document.getElementById('case2Sit').value = cp.case2Sit || '';
+  document.getElementById('case2Res').value = cp.case2Res || '';
+  document.getElementById('case3Sit').value = cp.case3Sit || '';
+  document.getElementById('case3Res').value = cp.case3Res || '';
+  document.getElementById('hardCase').value  = cp.hardCase  || '';
   calcRevenue();
 }
 
@@ -971,6 +1132,22 @@ function calcRevenue() {
   document.getElementById('tileRevenue').textContent = totalRev.toLocaleString('ko-KR');
   document.getElementById('tileCare').textContent = (basic + prec).toLocaleString('ko-KR');
   document.getElementById('tileBP').textContent = basic + ' / ' + prec;
+  // 구 정책 비교 (출장비 12만원 × 총 건수)
+  const totalCases = basic + prec;
+  const oldRev = totalCases * 12;
+  const diff = contractRev - oldRev;
+  document.getElementById('oldPolicyRev').textContent = oldRev.toLocaleString('ko-KR') + '만원';
+  const diffEl = document.getElementById('policyDiff');
+  diffEl.textContent = (diff >= 0 ? '+' : '') + diff.toLocaleString('ko-KR') + '만원';
+  diffEl.style.color = diff >= 0 ? 'var(--ok)' : 'var(--warn)';
+  const pctEl = document.getElementById('policyDiffPct');
+  if (oldRev > 0) {
+    const pct = Math.round(diff / oldRev * 100);
+    pctEl.textContent = '(' + (pct >= 0 ? '+' : '') + pct + '%)';
+    pctEl.style.color = diff >= 0 ? 'var(--ok)' : 'var(--warn)';
+  } else {
+    pctEl.textContent = '';
+  }
   updateTiles();
 }
 
@@ -981,14 +1158,18 @@ function updateTiles() {
 
 // ── RESET FORM ─────────────────────────────────────────────────
 function resetForm() {
-  const fields = ['meetingDate','attendees','facilitator','serviceIssues','nextMonthGoals','specialNotes'];
+  const fields = ['meetingDate','attendees','facilitator','serviceIssues','nextMonthGoals','specialNotes',
+                  'ambiguousCases','gradeDecision','case1Sit','case1Res','case2Sit','case2Res','case3Sit','case3Res','hardCase'];
   fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['basicCount','precisionCount','newContracts','canceledContracts',
    'serviceRequests','serviceCompleted','avgResponseTime',
-   'consumableRevenue','additionalRevenue'].forEach(id => {
+   'consumableRevenue','additionalRevenue',
+   'basicDowngrade','precUpgrade','complaintCnt','escalateCnt'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = 0;
   });
   document.querySelectorAll('input[name=contractGoal]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name=consistency]').forEach(r => r.checked = false);
+  [1,2,3,4,5,6,7,8].forEach(i => { const el = document.getElementById('c'+i); if(el) el.checked = false; });
   initMachineRows();
   calcRevenue();
 }
