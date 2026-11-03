@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roland Care 월간 리뷰</title>
+<meta name="description" content="3DBioCAD 서비스팀 Roland Care Program 월간 점검 미팅 양식 (Firebase 공유 버전)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roland Care">
+<meta name="theme-color" content="#1A2840">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg:        #F0F2F5;
+  --bg-card:   #FFFFFF;
+  --bg-header: #1A2840;
+  --bg-sub:    #EEF2F8;
+  --fg:        #1C2330;
+  --fg-mid:    #4A5568;
+  --fg-dim:    #8A94A6;
+  --fg-inv:    #FFFFFF;
+  --border:    #D8DDE8;
+  --accent:    #1E5FA8;
+  --accent-bg: #EAF1FB;
+  --ok:        #1B6B3A;
+  --ok-bg:     #E6F4EC;
+  --warn:      #B45309;
+  --warn-bg:   #FEF3E2;
+  --fire:      #FF6B35;
+  --fire-bg:   #FFF0EB;
+  --mono:      'DM Mono', 'Courier New', monospace;
+  --sans:      'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
+  --shadow:    0 2px 6px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+  --radius:    8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0E1420; --bg-card: #1A2235; --bg-header: #0A0F1A;
+    --bg-sub: #131D30; --fg: #E2E8F4; --fg-mid: #94A3B8; --fg-dim: #5A6A85;
+    --border: #273245; --accent: #4A8DD4; --accent-bg: #132040;
+    --ok-bg: #0D2A1A; --warn-bg: #2A1A05;
+    --fire: #FF8C5A; --fire-bg: #2A150A;
+    color-scheme: dark;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+body {
+  font-family: var(--sans); background: var(--bg); color: var(--fg);
+  font-size: 14px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 2rem;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--bg-header);
+  margin-left: max(-16px, calc(-1 * env(safe-area-inset-left, 0px)));
+  margin-right: max(-16px, calc(-1 * env(safe-area-inset-right, 0px)));
+  padding: 1rem max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.site-header h1 { color: var(--fg-inv); font-size: 1.1rem; font-weight: 700; }
+.site-header h1 small { display:block; font-size:.75rem; font-weight:400; opacity:.7; margin-top:1px; }
+.header-actions { display:flex; gap:.5rem; align-items:center; }
+.db-status {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .72rem; color: rgba(255,255,255,.7);
+  padding: .3rem .7rem; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.2);
+  cursor: pointer; transition: background .2s;
+}
+.db-status:hover { background: rgba(255,255,255,.1); }
+.db-dot { width:8px; height:8px; border-radius:50%; background:#888; flex-shrink:0; }
+.db-dot.connected { background: #4ade80; }
+.db-dot.error { background: #f87171; }
+.db-dot.local { background: #fbbf24; }
+
+/* ── FIREBASE SETUP PANEL ── */
+.setup-panel {
+  background: var(--bg-card);
+  border: 2px solid var(--fire);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.setup-panel h2 {
+  font-size: .9rem; font-weight: 700; color: var(--fire);
+  display: flex; align-items: center; gap: .4rem; margin-bottom: .75rem;
+}
+.setup-steps {
+  background: var(--fire-bg); border-radius: 6px;
+  padding: .85rem 1rem; margin-bottom: 1rem;
+  font-size: .8rem; color: var(--fg-mid); line-height: 1.9;
+}
+.setup-steps ol { padding-left: 1.3rem; }
+.setup-steps li { margin-bottom: .1rem; }
+.setup-steps a { color: var(--fire); font-weight:600; }
+.setup-steps code { font-family: var(--mono); background: rgba(0,0,0,.07); padding: 1px 5px; border-radius:3px; font-size:.85em; }
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+@media (max-width: 480px) { .setup-grid { grid-template-columns: 1fr; } }
+.setup-field label { display:block; font-size:.75rem; font-weight:600; color:var(--fg-mid); margin-bottom:.25rem; letter-spacing:.03em; text-transform:uppercase; }
+.setup-field input {
+  width:100%; padding:.5rem .7rem; border:1px solid var(--border);
+  border-radius: 5px; font-size:.82rem; font-family:var(--mono);
+  background: var(--bg); color: var(--fg);
+  transition: border-color .2s;
+}
+.setup-field input:focus { outline:none; border-color:var(--fire); }
+.setup-field.full { grid-column: 1 / -1; }
+.setup-actions { display:flex; gap:.6rem; margin-top:.85rem; flex-wrap:wrap; }
+.btn {
+  padding: .55rem 1.1rem; border-radius: 6px; font-size: .82rem;
+  font-weight: 600; font-family: var(--sans); cursor: pointer;
+  border: none; transition: all .18s; display:inline-flex; align-items:center; gap:.35rem;
+}
+.btn-fire { background: var(--fire); color: #fff; }
+.btn-fire:hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; color: var(--fg-mid); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg-sub); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-sm { padding: .38rem .8rem; font-size: .78rem; }
+
+/* ── MONTH NAV ── */
+.month-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .5rem; margin-bottom: 1rem;
+  background: var(--bg-card); padding: .7rem 1rem;
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+.month-nav { display:flex; align-items:center; gap:.5rem; }
+.month-nav button {
+  background: none; border: 1px solid var(--border); border-radius: 5px;
+  width: 30px; height: 30px; cursor: pointer; color: var(--fg-mid);
+  font-size: 1rem; display:flex; align-items:center; justify-content:center;
+  transition: all .15s;
+}
+.month-nav button:hover { background: var(--bg-sub); color: var(--fg); }
+#monthLabel { font-size: 1rem; font-weight: 700; min-width: 7rem; text-align:center; font-family:var(--mono); }
+.month-actions { display:flex; gap:.5rem; }
+.sync-badge {
+  font-size:.7rem; padding:.2rem .6rem; border-radius:12px;
+  background:var(--ok-bg); color:var(--ok); font-weight:600; display:none;
+}
+
+/* ── SUMMARY TILES ── */
+.tiles { display:grid; grid-template-columns: repeat(4, 1fr); gap:.75rem; margin-bottom:1.25rem; }
+@media (max-width: 600px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+.tile {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: .9rem 1rem; box-shadow: var(--shadow-sm);
+  border-left: 3px solid var(--border);
+}
+.tile.accent { border-left-color: var(--accent); }
+.tile.ok { border-left-color: var(--ok); }
+.tile.warn { border-left-color: var(--warn); }
+.tile-label { font-size:.7rem; font-weight:600; color:var(--fg-dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.35rem; }
+.tile-val { font-size:1.5rem; font-weight:700; font-family:var(--mono); color:var(--accent); font-variant-numeric:tabular-nums; }
+.tile.ok .tile-val { color:var(--ok); }
+.tile.warn .tile-val { color:var(--warn); }
+.tile-sub { font-size:.7rem; color:var(--fg-dim); margin-top:.2rem; }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); margin-bottom: 1rem; overflow:hidden;
+}
+.card-head {
+  padding: .75rem 1rem; background: var(--bg-sub);
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom: 1px solid var(--border);
+}
+.card-head h3 { font-size:.82rem; font-weight:700; color:var(--fg-mid); text-transform:uppercase; letter-spacing:.07em; }
+.card-body { padding: 1rem; display:flex; flex-direction:column; gap:.7rem; }
+
+/* ── FORM ELEMENTS ── */
+.field-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.field-label { font-size:.78rem; font-weight:600; color:var(--fg-mid); min-width:120px; flex-shrink:0; }
+.field-input-wrap { flex:1; display:flex; align-items:center; gap:.4rem; min-width:0; }
+input[type=number], input[type=text], select, textarea {
+  padding: .45rem .7rem; border: 1px solid var(--border);
+  border-radius: 5px; font-size: .88rem; font-family: var(--sans);
+  background: var(--bg); color: var(--fg); width: 100%;
+  transition: border-color .18s;
+}
+input[type=number]:focus, input[type=text]:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent);
+}
+input[type=number] { font-family: var(--mono); font-variant-numeric: tabular-nums; width: 90px; text-align:right; }
+.unit { font-size:.78rem; color:var(--fg-dim); white-space:nowrap; }
+.calc-result { font-family:var(--mono); font-size:.88rem; font-weight:700; color:var(--accent); min-width:6rem; text-align:right; }
+textarea { resize:vertical; min-height:80px; line-height:1.6; }
+.radio-group { display:flex; gap:.5rem; flex-wrap:wrap; }
+.radio-group label {
+  display:flex; align-items:center; gap:.35rem; font-size:.82rem;
+  padding:.3rem .65rem; border-radius:5px; cursor:pointer;
+  border: 1px solid var(--border); transition: all .15s;
+}
+.radio-group label:has(input:checked) { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); }
+
+/* ── MACHINE TABLE ── */
+.machine-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.machine-table th {
+  background:var(--bg-sub); padding:.5rem .7rem; text-align:left;
+  font-size:.7rem; font-weight:700; color:var(--fg-mid); text-transform:uppercase; letter-spacing:.05em;
+  border-bottom:2px solid var(--border); white-space:nowrap;
+}
+.machine-table td {
+  padding:.45rem .7rem; border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.machine-table tr:last-child td { border-bottom:none; }
+.machine-table input[type=number] { width:70px; font-size:.82rem; }
+.machine-table select { font-size:.82rem; padding:.3rem .5rem; }
+.machine-table input[type=text] { font-size:.82rem; }
+.status-select { font-size:.78rem; }
+.status-select option { background: var(--bg); }
+
+/* ── HISTORY ── */
+.history-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:.75rem; }
+.hist-card {
+  background: var(--bg-card); border-radius:var(--radius);
+  border: 1px solid var(--border); padding:.85rem 1rem;
+  cursor:pointer; transition: all .18s;
+  position: relative;
+}
+.hist-card:hover { box-shadow: var(--shadow); border-color:var(--accent); }
+.hist-month { font-family:var(--mono); font-weight:700; font-size:.9rem; margin-bottom:.4rem; }
+.hist-meta { font-size:.72rem; color:var(--fg-dim); display:flex; flex-wrap:wrap; gap:.5rem; }
+.hist-meta span { display:flex; align-items:center; gap:.25rem; }
+.hist-sync { position:absolute; top:.6rem; right:.7rem; font-size:.65rem; padding:.15rem .5rem; border-radius:10px; }
+.hist-sync.cloud { background:var(--accent-bg); color:var(--accent); }
+.hist-sync.local { background:var(--warn-bg); color:var(--warn); }
+
+/* ── TOAST ── */
+.toast-wrap { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; align-items:center; gap:.4rem; pointer-events:none; }
+.toast {
+  background:#1A2840; color:#fff; padding:.55rem 1.1rem; border-radius:20px;
+  font-size:.82rem; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,.25);
+  animation: toastIn .2s ease; white-space:nowrap; max-width:90vw;
+}
+.toast.ok { background: #1B6B3A; }
+.toast.err { background: #B91C1C; }
+@keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── TABS ── */
+.tabs { display:flex; gap:.3rem; margin-bottom:1.25rem; border-bottom:2px solid var(--border); padding-bottom:0; }
+.tab {
+  padding:.55rem 1rem; font-size:.82rem; font-weight:600; cursor:pointer;
+  background:none; border:none; border-radius:6px 6px 0 0; color:var(--fg-dim);
+  transition: all .15s; position:relative; bottom:-2px;
+}
+.tab.active { color:var(--accent); border-bottom:2px solid var(--accent); background:var(--accent-bg); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ── MISC ── */
+.divider { height:1px; background: var(--border); margin:.25rem 0; }
+.text-dim { color:var(--fg-dim); font-size:.78rem; }
+.text-ok { color: var(--ok); }
+.text-warn { color: var(--warn); }
+.empty-state { text-align:center; padding:2.5rem 1rem; color:var(--fg-dim); font-size:.85rem; }
+.empty-state p { margin-top:.5rem; }
+.loading { text-align:center; padding:1.5rem; color:var(--fg-dim); font-size:.82rem; }
+</style>
+</head>
+<body>
+
+<!-- Firebase SDK compat (CDN) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<header class="site-header">
+  <h1>Roland Care 월간 리뷰<small>3DBioCAD 서비스팀 · 공유 데이터베이스 버전</small></h1>
+  <div class="header-actions">
+    <div class="db-status" id="dbStatus" onclick="toggleSetup()" title="DB 설정 보기/숨기기">
+      <span class="db-dot" id="dbDot"></span>
+      <span id="dbStatusText">연결 안 됨</span>
+    </div>
+  </div>
+</header>
+
+<!-- FIREBASE SETUP PANEL -->
+<div class="setup-panel" id="setupPanel">
+  <h2>🔥 Firebase 설정</h2>
+  <div class="setup-steps">
+    <strong>처음 설정 방법 (약 5분):</strong>
+    <ol>
+      <li><a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속 → 프로젝트 만들기</li>
+      <li>프로젝트 생성 후 왼쪽 메뉴 <code>Firestore Database</code> → <strong>데이터베이스 만들기</strong> (테스트 모드 선택)</li>
+      <li>왼쪽 메뉴 <code>프로젝트 설정</code>(⚙️) → <strong>내 앱</strong> → 웹 앱 추가(&lt;/&gt;) → 앱 등록</li>
+      <li>표시된 <code>firebaseConfig</code> 값을 아래에 붙여넣기</li>
+      <li>팀원들에게 이 HTML 파일만 공유하면 모두 같은 DB를 사용!</li>
+    </ol>
+  </div>
+  <div class="setup-grid">
+    <div class="setup-field">
+      <label>API Key</label>
+      <input type="text" id="fb-apiKey" placeholder="AIzaSy...">
+    </div>
+    <div class="setup-field">
+      <label>Auth Domain</label>
+      <input type="text" id="fb-authDomain" placeholder="myproject.firebaseapp.com">
+    </div>
+    <div class="setup-field full">
+      <label>Project ID</label>
+      <input type="text" id="fb-projectId" placeholder="my-project-id">
+    </div>
+    <div class="setup-field">
+      <label>Storage Bucket</label>
+      <input type="text" id="fb-storageBucket" placeholder="myproject.appspot.com">
+    </div>
+    <div class="setup-field">
+      <label>Messaging Sender ID</label>
+      <input type="text" id="fb-messagingSenderId" placeholder="123456789">
+    </div>
+    <div class="setup-field full">
+      <label>App ID</label>
+      <input type="text" id="fb-appId" placeholder="1:123:web:abc123">
+    </div>
+  </div>
+  <div class="setup-actions">
+    <button class="btn btn-fire" onclick="connectFirebase()">🔥 Firebase 연결</button>
+    <button class="btn btn-ghost" onclick="clearConfig()">설정 초기화</button>
+    <button class="btn btn-ghost btn-sm" onclick="useLocalOnly()">로컬 저장만 사용</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('form')">📝 월간 입력</button>
+  <button class="tab" onclick="switchTab('history')">📊 이력 조회</button>
+</div>
+
+<!-- TAB: FORM -->
+<div class="tab-panel active" id="tab-form">
+
+  <!-- MONTH NAV -->
+  <div class="month-bar">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span id="monthLabel">2026-11</span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="month-actions">
+      <span class="sync-badge" id="syncBadge">✓ 저장됨</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadMonth()">🔄 새로고침</button>
+      <button class="btn btn-primary btn-sm" onclick="saveMonth()">💾 저장</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY TILES -->
+  <div class="tiles">
+    <div class="tile accent">
+      <div class="tile-label">총 매출</div>
+      <div class="tile-val" id="tileRevenue">0</div>
+      <div class="tile-sub">만원</div>
+    </div>
+    <div class="tile ok">
+      <div class="tile-label">Care 계약</div>
+      <div class="tile-val" id="tileCare">0</div>
+      <div class="tile-sub">건</div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Basic / Precision</div>
+      <div class="tile-val" id="tileBP" style="font-size:1.1rem">0 / 0</div>
+      <div class="tile-sub">건</div>
+    </div>
+    <div class="tile warn">
+      <div class="tile-label">서비스 요청</div>
+      <div class="tile-val" id="tileSR">0</div>
+      <div class="tile-sub">건</div>
+    </div>
+  </div>
+
+  <!-- CARD: 미팅 기본 정보 -->
+  <div class="card">
+    <div class="card-head"><h3>📋 미팅 기본 정보</h3></div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="field-label">미팅 날짜</span>
+        <div class="field-input-wrap">
+          <input type="text" id="meetingDate" placeholder="2026-11-03" style="max-width:160px">
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">참석자</span>
+        <div class="field-input-wrap">
+          <input type="text" id="attendees" placeholder="홍길동, 김철수, 이영희">
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">진행자</span>
+        <div class="field-input-wrap">
+          <input type="text" id="facilitator" placeholder="담당자 이름">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: Care 계약 현황 -->
+  <div class="card">
+    <div class="card-head">
+      <h3>🤝 Care 계약 현황</h3>
+      <span class="text-dim" id="contractRevenue">매출: 0만원</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="field-label">Basic Care</span>
+        <div class="field-input-wrap">
+          <input type="number" id="basicCount" min="0" value="0" oninput="calcRevenue()">
+          <span class="unit">건 × 20만원</span>
+          <span class="calc-result" id="basicRevenue">0만원</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Precision Care</span>
+        <div class="field-input-wrap">
+          <input type="number" id="precisionCount" min="0" value="0" oninput="calcRevenue()">
+          <span class="unit">건 × 35만원</span>
+          <span class="calc-result" id="precisionRevenue">0만원</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field-row">
+        <span class="field-label">신규 계약</span>
+        <div class="field-input-wrap">
+          <input type="number" id="newContracts" min="0" value="0">
+          <span class="unit">건 (이번 달)</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">해지 건수</span>
+        <div class="field-input-wrap">
+          <input type="number" id="canceledContracts" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">계약 목표 달성</span>
+        <div class="field-input-wrap radio-group">
+          <label><input type="radio" name="contractGoal" value="달성"> 달성 ✅</label>
+          <label><input type="radio" name="contractGoal" value="미달"> 미달 ⚠️</label>
+          <label><input type="radio" name="contractGoal" value="초과"> 초과 🎯</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: 장비 점검 현황 -->
+  <div class="card">
+    <div class="card-head"><h3>🔧 장비 점검 현황</h3></div>
+    <div class="card-body" style="padding:0; overflow-x:auto;">
+      <table class="machine-table">
+        <thead>
+          <tr>
+            <th>장비명</th>
+            <th>고객사</th>
+            <th>점검 횟수</th>
+            <th>상태</th>
+            <th>특이사항</th>
+          </tr>
+        </thead>
+        <tbody id="machineRows">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:.7rem 1rem; border-top:1px solid var(--border);">
+      <button class="btn btn-ghost btn-sm" onclick="addMachineRow()">+ 행 추가</button>
+    </div>
+  </div>
+
+  <!-- CARD: 서비스 요청 -->
+  <div class="card">
+    <div class="card-head"><h3>🛠️ 서비스 요청 / CS</h3></div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="field-label">총 서비스 요청</span>
+        <div class="field-input-wrap">
+          <input type="number" id="serviceRequests" min="0" value="0" oninput="updateTiles()">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">처리 완료</span>
+        <div class="field-input-wrap">
+          <input type="number" id="serviceCompleted" min="0" value="0">
+          <span class="unit">건</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">평균 응대 시간</span>
+        <div class="field-input-wrap">
+          <input type="number" id="avgResponseTime" min="0" value="0">
+          <span class="unit">시간</span>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">주요 이슈</span>
+        <div class="field-input-wrap">
+          <textarea id="serviceIssues" placeholder="이번 달 주요 CS 이슈를 입력하세요..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: 매출 및 기타 -->
+  <div class="card">
+    <div class="card-head"><h3>💰 추가 매출</h3></div>
+    <div class="card-body">
+      <div class="field-row">
+        <span class="field-label">소모품 매출</span>
+        <div class="field-input-wrap">
+          <input type="number" id="consumableRevenue" min="0" value="0" oninput="calcRevenue()">
+          <span class="unit">만원</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <span class="field-label">추가 서비스</span>
+        <div class="field-input-wrap">
+          <input type="number" id="additionalRevenue" min="0" value="0" oninput="calcRevenue()">
+          <span class="unit">만원</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD: 다음 달 계획 -->
+  <div class="card">
+    <div class="card-head"><h3>📌 다음 달 계획 및 특이사항</h3></div>
+    <div class="card-body">
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">다음 달 목표</span>
+        <div class="field-input-wrap">
+          <textarea id="nextMonthGoals" placeholder="다음 달 중점 목표를 입력하세요..."></textarea>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start">
+        <span class="field-label" style="padding-top:.4rem">특이사항 / 메모</span>
+        <div class="field-input-wrap">
+          <textarea id="specialNotes" placeholder="기타 특이사항이나 논의 사항을 입력하세요..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE BUTTON -->
+  <div style="display:flex; justify-content:flex-end; gap:.75rem; padding:.5rem 0 1rem;">
+    <button class="btn btn-ghost" onclick="exportJSON()">⬇ JSON 내보내기</button>
+    <button class="btn btn-primary" onclick="saveMonth()" style="padding:.65rem 1.8rem; font-size:.9rem;">💾 저장하기</button>
+  </div>
+</div>
+
+<!-- TAB: HISTORY -->
+<div class="tab-panel" id="tab-history">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <h2 style="font-size:.9rem; font-weight:700; color:var(--fg-mid);">저장된 미팅 기록</h2>
+    <button class="btn btn-ghost btn-sm" onclick="loadHistory()">🔄 새로고침</button>
+  </div>
+  <div id="historyContainer"><div class="loading">불러오는 중...</div></div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────
+const COLLECTION = 'roland-meetings';
+const LS_PREFIX  = 'rc_meeting_';
+const LS_CONFIG  = 'rc_firebase_config';
+
+// ── STATE ──────────────────────────────────────────────────────
+let db = null;
+let useFirebase = false;
+let currentMonth = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+})();
+
+// ── INIT ───────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('monthLabel').textContent = currentMonth;
+  document.getElementById('meetingDate').value = new Date().toISOString().slice(0,10);
+  initMachineRows();
+  tryAutoConnect();
+});
+
+async function tryAutoConnect() {
+  try {
+    const saved = localStorage.getItem(LS_CONFIG);
+    if (saved) {
+      const cfg = JSON.parse(saved);
+      if (cfg && cfg.projectId) {
+        fillConfigForm(cfg);
+        await connectFirebase(true);
+        return;
+      }
+    }
+  } catch(e) {}
+  setLocalMode();
+  loadMonth();
+}
+
+// ── FIREBASE ───────────────────────────────────────────────────
+async function connectFirebase(silent = false) {
+  const cfg = readConfigForm();
+  if (!cfg) {
+    if (!silent) toast('Firebase 설정을 입력해주세요.', 'err');
+    return;
+  }
+  try {
+    setDbStatus('connecting', '연결 중...');
+    // Delete previous app if exists
+    if (firebase.apps.length > 0) {
+      await firebase.app().delete();
+    }
+    firebase.initializeApp(cfg);
+    db = firebase.firestore();
+    // Test connection
+    await db.collection(COLLECTION).limit(1).get();
+    useFirebase = true;
+    setDbStatus('connected', '🔥 Firebase 연결됨');
+    try { localStorage.setItem(LS_CONFIG, JSON.stringify(cfg)); } catch(e) {}
+    document.getElementById('setupPanel').style.display = 'none';
+    if (!silent) toast('Firebase에 연결되었습니다! 🎉', 'ok');
+    await loadMonth();
+    await loadHistory();
+  } catch(e) {
+    useFirebase = false;
+    db = null;
+    setDbStatus('error', '연결 실패');
+    toast('Firebase 연결 실패: ' + (e.message || String(e)), 'err');
+    console.error(e);
+  }
+}
+
+function readConfigForm() {
+  const apiKey = document.getElementById('fb-apiKey').value.trim();
+  const projectId = document.getElementById('fb-projectId').value.trim();
+  if (!apiKey || !projectId) return null;
+  return {
+    apiKey,
+    authDomain: document.getElementById('fb-authDomain').value.trim(),
+    projectId,
+    storageBucket: document.getElementById('fb-storageBucket').value.trim(),
+    messagingSenderId: document.getElementById('fb-messagingSenderId').value.trim(),
+    appId: document.getElementById('fb-appId').value.trim(),
+  };
+}
+
+function fillConfigForm(cfg) {
+  if (!cfg) return;
+  const fields = ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId'];
+  fields.forEach(f => {
+    const el = document.getElementById('fb-' + f);
+    if (el && cfg[f]) el.value = cfg[f];
+  });
+}
+
+function clearConfig() {
+  const fields = ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId'];
+  fields.forEach(f => {
+    const el = document.getElementById('fb-' + f);
+    if (el) el.value = '';
+  });
+  try { localStorage.removeItem(LS_CONFIG); } catch(e) {}
+  useFirebase = false; db = null;
+  setLocalMode();
+  toast('설정이 초기화되었습니다.', '');
+}
+
+function useLocalOnly() {
+  document.getElementById('setupPanel').style.display = 'none';
+  setLocalMode();
+  loadMonth();
+  toast('로컬 저장 모드로 사용합니다.', '');
+}
+
+function setLocalMode() {
+  setDbStatus('local', '로컬 저장');
+}
+
+function toggleSetup() {
+  const p = document.getElementById('setupPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+// ── DB STATUS ──────────────────────────────────────────────────
+function setDbStatus(state, text) {
+  const dot = document.getElementById('dbDot');
+  const label = document.getElementById('dbStatusText');
+  dot.className = 'db-dot ' + (state === 'connected' ? 'connected' : state === 'error' ? 'error' : 'local');
+  label.textContent = text;
+}
+
+// ── TABS ───────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['form','history'][i] === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  if (name === 'history') loadHistory();
+}
+
+// ── MONTH NAV ──────────────────────────────────────────────────
+function changeMonth(dir) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + dir, 1);
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('monthLabel').textContent = currentMonth;
+  resetForm();
+  loadMonth();
+}
+
+// ── MACHINE ROWS ───────────────────────────────────────────────
+function initMachineRows() {
+  const tbody = document.getElementById('machineRows');
+  tbody.innerHTML = '';
+  for (let i = 0; i < 3; i++) addMachineRow();
+}
+
+function addMachineRow() {
+  const tbody = document.getElementById('machineRows');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="EGX-400, MDX-50..." style="min-width:110px"></td>
+    <td><input type="text" placeholder="고객사명" style="min-width:100px"></td>
+    <td><input type="number" min="0" value="0" style="width:65px"></td>
+    <td>
+      <select class="status-select">
+        <option value="정상">✅ 정상</option>
+        <option value="주의">⚠️ 주의</option>
+        <option value="수리필요">🔴 수리필요</option>
+        <option value="교체권고">🟡 교체권고</option>
+      </select>
+    </td>
+    <td><input type="text" placeholder="특이사항 없음" style="min-width:140px"></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function getMachineData() {
+  const rows = document.querySelectorAll('#machineRows tr');
+  return Array.from(rows).map(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    return {
+      name: inputs[0].value,
+      customer: inputs[1].value,
+      inspections: Number(inputs[2].value) || 0,
+      status: inputs[3].value,
+      notes: inputs[4].value,
+    };
+  }).filter(r => r.name || r.customer);
+}
+
+function setMachineData(machines) {
+  const tbody = document.getElementById('machineRows');
+  tbody.innerHTML = '';
+  if (!machines || machines.length === 0) {
+    for (let i = 0; i < 3; i++) addMachineRow();
+    return;
+  }
+  machines.forEach(m => {
+    addMachineRow();
+    const trs = tbody.querySelectorAll('tr');
+    const tr = trs[trs.length - 1];
+    const inputs = tr.querySelectorAll('input, select');
+    inputs[0].value = m.name || '';
+    inputs[1].value = m.customer || '';
+    inputs[2].value = m.inspections || 0;
+    inputs[3].value = m.status || '정상';
+    inputs[4].value = m.notes || '';
+  });
+}
+
+// ── COLLECT FORM DATA ──────────────────────────────────────────
+function collectData() {
+  const radios = document.querySelectorAll('input[name=contractGoal]:checked');
+  return {
+    month: currentMonth,
+    savedAt: new Date().toISOString(),
+    source: useFirebase ? 'firebase' : 'local',
+    meeting: {
+      date: document.getElementById('meetingDate').value,
+      attendees: document.getElementById('attendees').value,
+      facilitator: document.getElementById('facilitator').value,
+    },
+    contracts: {
+      basic: Number(document.getElementById('basicCount').value) || 0,
+      precision: Number(document.getElementById('precisionCount').value) || 0,
+      newContracts: Number(document.getElementById('newContracts').value) || 0,
+      canceled: Number(document.getElementById('canceledContracts').value) || 0,
+      goalStatus: radios.length ? radios[0].value : '',
+    },
+    machines: getMachineData(),
+    service: {
+      requests: Number(document.getElementById('serviceRequests').value) || 0,
+      completed: Number(document.getElementById('serviceCompleted').value) || 0,
+      avgResponseTime: Number(document.getElementById('avgResponseTime').value) || 0,
+      issues: document.getElementById('serviceIssues').value,
+    },
+    revenue: {
+      consumable: Number(document.getElementById('consumableRevenue').value) || 0,
+      additional: Number(document.getElementById('additionalRevenue').value) || 0,
+    },
+    notes: {
+      nextMonthGoals: document.getElementById('nextMonthGoals').value,
+      special: document.getElementById('specialNotes').value,
+    },
+  };
+}
+
+// ── APPLY DATA TO FORM ─────────────────────────────────────────
+function applyData(data) {
+  if (!data) return;
+  const m = data.meeting || {};
+  const c = data.contracts || {};
+  const s = data.service || {};
+  const r = data.revenue || {};
+  const n = data.notes || {};
+  if (m.date) document.getElementById('meetingDate').value = m.date;
+  if (m.attendees) document.getElementById('attendees').value = m.attendees;
+  if (m.facilitator) document.getElementById('facilitator').value = m.facilitator;
+  document.getElementById('basicCount').value = c.basic || 0;
+  document.getElementById('precisionCount').value = c.precision || 0;
+  document.getElementById('newContracts').value = c.newContracts || 0;
+  document.getElementById('canceledContracts').value = c.canceled || 0;
+  if (c.goalStatus) {
+    const radio = document.querySelector(`input[name=contractGoal][value="${c.goalStatus}"]`);
+    if (radio) radio.checked = true;
+  }
+  document.getElementById('serviceRequests').value = s.requests || 0;
+  document.getElementById('serviceCompleted').value = s.completed || 0;
+  document.getElementById('avgResponseTime').value = s.avgResponseTime || 0;
+  document.getElementById('serviceIssues').value = s.issues || '';
+  document.getElementById('consumableRevenue').value = r.consumable || 0;
+  document.getElementById('additionalRevenue').value = r.additional || 0;
+  document.getElementById('nextMonthGoals').value = n.nextMonthGoals || '';
+  document.getElementById('specialNotes').value = n.special || '';
+  setMachineData(data.machines || []);
+  calcRevenue();
+}
+
+// ── SAVE ───────────────────────────────────────────────────────
+async function saveMonth() {
+  const data = collectData();
+  let saved = false;
+  // Firebase
+  if (useFirebase && db) {
+    try {
+      await db.collection(COLLECTION).doc(currentMonth).set(data);
+      saved = true;
+      toast('Firebase에 저장되었습니다! 🔥', 'ok');
+    } catch(e) {
+      toast('Firebase 저장 실패: ' + (e.message || ''), 'err');
+      console.error(e);
+    }
+  }
+  // Local fallback (always save locally too)
+  try {
+    localStorage.setItem(LS_PREFIX + currentMonth, JSON.stringify(data));
+    if (!saved) toast('로컬에 저장되었습니다.', 'ok');
+  } catch(e) {}
+  const badge = document.getElementById('syncBadge');
+  badge.style.display = 'inline';
+  setTimeout(() => { badge.style.display = 'none'; }, 3000);
+}
+
+// ── LOAD ───────────────────────────────────────────────────────
+async function loadMonth() {
+  // Try Firebase first
+  if (useFirebase && db) {
+    try {
+      const doc = await db.collection(COLLECTION).doc(currentMonth).get();
+      if (doc.exists) {
+        applyData(doc.data());
+        return;
+      }
+    } catch(e) { console.error('Firebase load error:', e); }
+  }
+  // Fallback to localStorage
+  try {
+    const raw = localStorage.getItem(LS_PREFIX + currentMonth);
+    if (raw) applyData(JSON.parse(raw));
+  } catch(e) {}
+}
+
+// ── LOAD HISTORY ───────────────────────────────────────────────
+async function loadHistory() {
+  const container = document.getElementById('historyContainer');
+  container.innerHTML = '<div class="loading">불러오는 중...</div>';
+  const records = {};
+  // localStorage records
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(LS_PREFIX)) {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const d = JSON.parse(raw);
+          const key = k.replace(LS_PREFIX, '');
+          records[key] = { ...d, _source: 'local' };
+        }
+      }
+    }
+  } catch(e) {}
+  // Firebase records (overwrite local if both exist)
+  if (useFirebase && db) {
+    try {
+      const snap = await db.collection(COLLECTION).orderBy('month', 'desc').limit(24).get();
+      snap.forEach(doc => {
+        records[doc.id] = { ...doc.data(), _source: 'firebase' };
+      });
+    } catch(e) { console.error('History load error:', e); }
+  }
+  const sorted = Object.entries(records).sort((a,b) => b[0].localeCompare(a[0]));
+  if (sorted.length === 0) {
+    container.innerHTML = '<div class="empty-state">📭<p>저장된 미팅 기록이 없습니다.</p></div>';
+    return;
+  }
+  container.innerHTML = '<div class="history-grid">' + sorted.map(([key, d]) => {
+    const c = d.contracts || {};
+    const s = d.service || {};
+    const r = d.revenue || {};
+    const basic = c.basic || 0;
+    const prec = c.precision || 0;
+    const totalRev = basic * 20 + prec * 35 + (r.consumable||0) + (r.additional||0);
+    const src = d._source === 'firebase' ? '<span class="hist-sync cloud">☁ Firebase</span>' : '<span class="hist-sync local">💾 로컬</span>';
+    return `<div class="hist-card" onclick="loadHistEntry('${key}')">
+      ${src}
+      <div class="hist-month">${key}</div>
+      <div class="hist-meta">
+        <span>🤝 ${basic+prec}건</span>
+        <span>💰 ${totalRev}만원</span>
+        <span>🛠 CS ${s.requests||0}건</span>
+        ${(d.meeting||{}).attendees ? `<span>👥 ${(d.meeting.attendees||'').split(',').length}명</span>` : ''}
+      </div>
+      ${(d.notes||{}).nextMonthGoals ? `<div style="font-size:.7rem;color:var(--fg-dim);margin-top:.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.notes.nextMonthGoals}</div>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function loadHistEntry(key) {
+  currentMonth = key;
+  document.getElementById('monthLabel').textContent = key;
+  switchTab('form');
+  resetForm();
+  loadMonth();
+}
+
+// ── CALC ───────────────────────────────────────────────────────
+function calcRevenue() {
+  const basic = Number(document.getElementById('basicCount').value) || 0;
+  const prec = Number(document.getElementById('precisionCount').value) || 0;
+  const consumable = Number(document.getElementById('consumableRevenue').value) || 0;
+  const additional = Number(document.getElementById('additionalRevenue').value) || 0;
+  const basicRev = basic * 20;
+  const precRev = prec * 35;
+  const contractRev = basicRev + precRev;
+  const totalRev = contractRev + consumable + additional;
+  document.getElementById('basicRevenue').textContent = basicRev.toLocaleString('ko-KR') + '만원';
+  document.getElementById('precisionRevenue').textContent = precRev.toLocaleString('ko-KR') + '만원';
+  document.getElementById('contractRevenue').textContent = '매출: ' + contractRev.toLocaleString('ko-KR') + '만원';
+  document.getElementById('tileRevenue').textContent = totalRev.toLocaleString('ko-KR');
+  document.getElementById('tileCare').textContent = (basic + prec).toLocaleString('ko-KR');
+  document.getElementById('tileBP').textContent = basic + ' / ' + prec;
+  updateTiles();
+}
+
+function updateTiles() {
+  const sr = Number(document.getElementById('serviceRequests').value) || 0;
+  document.getElementById('tileSR').textContent = sr;
+}
+
+// ── RESET FORM ─────────────────────────────────────────────────
+function resetForm() {
+  const fields = ['meetingDate','attendees','facilitator','serviceIssues','nextMonthGoals','specialNotes'];
+  fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['basicCount','precisionCount','newContracts','canceledContracts',
+   'serviceRequests','serviceCompleted','avgResponseTime',
+   'consumableRevenue','additionalRevenue'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = 0;
+  });
+  document.querySelectorAll('input[name=contractGoal]').forEach(r => r.checked = false);
+  initMachineRows();
+  calcRevenue();
+}
+
+// ── EXPORT ─────────────────────────────────────────────────────
+function exportJSON() {
+  const data = collectData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'roland-care-' + currentMonth + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('JSON 파일이 다운로드됩니다.', '');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s'; el.style.opacity = '0';
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+}
+</script>
+</body>
+</html>
