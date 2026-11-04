@@ -1164,7 +1164,7 @@ function loadHistEntry(key) {
 
 // ── CALC ───────────────────────────────────────────────────────
 // ── PARTS ──────────────────────────────────────────────────────
-const ROLAND_MODELS = ['DWX-42W', 'DWX-52D', 'DWX-52DCi', 'DWX-4W', 'DWX-4', 'MDX-50', 'MDX-540', 'EGX-400', 'EGX-350', '기타'];
+const ROLAND_MODELS = ['DWX-42W', 'DWX-52D', 'DWX-52DCi', 'DWX-52Di', 'DWX-51D', 'DWX-53D', 'DWX-53DC', '기타'];
 
 function initParts() {
   const container = document.getElementById('partsContainer');
@@ -1188,4 +1188,5 @@ function addPartsModelBlock(modelName) {
     <div class="parts-model-body" id="${blockId}_body">
       <div class="parts-col-head">부품명</div>
       <div class="parts-col-head" style="text-align:right">수량</div>
-      <div class="parts-col-head" style="text-align:right">단가(원)</div
+      <div class="parts-col-head" style="text-align:right">단가(원)</div>
+      <div cla
