@@ -241,6 +241,37 @@ textarea { resize:vertical; min-height:80px; line-height:1.6; }
 .rating-opt:has(input:checked) { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); }
 .rating-opt input { width:14px; height:14px; accent-color:var(--accent); }
 
+/* ── PARTS TABLE ── */
+.parts-model-block { border: 1px solid var(--border); border-radius: 7px; overflow: hidden; margin-bottom: .75rem; }
+.parts-model-head {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-sub); padding: .5rem .85rem;
+  font-size: .78rem; font-weight: 700; cursor: pointer; user-select: none;
+  gap: .5rem;
+}
+.parts-model-head .model-name { color: var(--fg-mid); flex: 1; }
+.parts-model-head .model-subtotal { font-family: var(--mono); font-size: .8rem; color: var(--accent); white-space: nowrap; }
+.parts-model-head .model-toggle { font-size: .7rem; color: var(--fg-dim); transition: transform .2s; }
+.parts-model-block.collapsed .model-toggle { transform: rotate(-90deg); }
+.parts-model-body { display: grid; grid-template-columns: 1fr 70px 80px 90px 28px; gap: 0; }
+.parts-model-block.collapsed .parts-model-body { display: none; }
+.parts-col-head {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--fg-dim); background: var(--bg-sub); padding: .35rem .6rem;
+  border-top: 1px solid var(--border);
+}
+.parts-cell { padding: .3rem .5rem; border-top: 1px solid var(--border); display: flex; align-items: center; }
+.parts-cell input[type=text]  { font-size: .82rem; width: 100%; }
+.parts-cell input[type=number]{ font-size: .82rem; width: 100%; text-align: right; }
+.parts-cell .line-total { font-family: var(--mono); font-size: .78rem; color: var(--fg-mid); text-align: right; width: 100%; }
+.parts-cell .del-btn { background: none; border: none; cursor: pointer; color: var(--fg-dim); font-size: .9rem; padding: 0 .2rem; line-height: 1; }
+.parts-cell .del-btn:hover { color: var(--warn); }
+.parts-add-row { display: flex; justify-content: flex-end; padding: .3rem .5rem; border-top: 1px solid var(--border); }
+.parts-add-row button { font-size: .75rem; padding: .2rem .65rem; }
+.parts-grand { display: flex; justify-content: space-between; align-items: center; padding: .6rem .9rem; background: var(--accent-bg); border-radius: 7px; margin-top: .25rem; }
+.parts-grand-label { font-size: .8rem; font-weight: 700; color: var(--accent); }
+.parts-grand-val { font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--accent); }
+
 /* ── HISTORY ── */
 .history-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:.75rem; }
 .hist-card {
@@ -558,6 +589,18 @@ textarea { resize:vertical; min-height:80px; line-height:1.6; }
     </div>
   </div>
 
+  <!-- CARD: 부품비 내역 -->
+  <div class="card">
+    <div class="card-head"><h3>🔩 부품비 내역</h3><span style="font-size:.72rem;color:var(--fg-dim);font-weight:500;">기종별 수기 입력</span></div>
+    <div class="card-body">
+      <div id="partsContainer"></div>
+      <div class="parts-grand">
+        <span class="parts-grand-label">📦 부품비 합계</span>
+        <span class="parts-grand-val" id="partsGrandTotal">0 원</span>
+      </div>
+    </div>
+  </div>
+
   <!-- CARD: 서비스 등급 분류 검토 -->
   <div class="card">
     <div class="card-head"><h3>🎯 서비스 등급 분류 검토</h3><span style="font-size:.72rem;color:var(--fg-dim);font-weight:500;">15분</span></div>
@@ -711,6 +754,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('monthLabel').textContent = currentMonth;
   document.getElementById('meetingDate').value = new Date().toISOString().slice(0,10);
   initMachineRows();
+  initParts();
   tryAutoConnect();
 });
 
@@ -937,6 +981,7 @@ function collectData() {
       basicDowngrade: Number(document.getElementById('basicDowngrade').value) || 0,
       precUpgrade: Number(document.getElementById('precUpgrade').value) || 0,
     },
+    parts: getPartsData(),
     complaints: {
       complaintCnt: Number(document.getElementById('complaintCnt').value) || 0,
       escalateCnt: Number(document.getElementById('escalateCnt').value) || 0,
@@ -984,6 +1029,7 @@ function applyData(data) {
   document.getElementById('nextMonthGoals').value = n.nextMonthGoals || '';
   document.getElementById('specialNotes').value = n.special || '';
   setMachineData(data.machines || []);
+  setPartsData(data.parts || []);
   // grade review
   const g = data.gradeReview || {};
   if (g.consistency) {
@@ -1117,88 +1163,29 @@ function loadHistEntry(key) {
 }
 
 // ── CALC ───────────────────────────────────────────────────────
-function calcRevenue() {
-  const basic = Number(document.getElementById('basicCount').value) || 0;
-  const prec = Number(document.getElementById('precisionCount').value) || 0;
-  const consumable = Number(document.getElementById('consumableRevenue').value) || 0;
-  const additional = Number(document.getElementById('additionalRevenue').value) || 0;
-  const basicRev = basic * 20;
-  const precRev = prec * 35;
-  const contractRev = basicRev + precRev;
-  const totalRev = contractRev + consumable + additional;
-  document.getElementById('basicRevenue').textContent = basicRev.toLocaleString('ko-KR') + '만원';
-  document.getElementById('precisionRevenue').textContent = precRev.toLocaleString('ko-KR') + '만원';
-  document.getElementById('contractRevenue').textContent = '매출: ' + contractRev.toLocaleString('ko-KR') + '만원';
-  document.getElementById('tileRevenue').textContent = totalRev.toLocaleString('ko-KR');
-  document.getElementById('tileCare').textContent = (basic + prec).toLocaleString('ko-KR');
-  document.getElementById('tileBP').textContent = basic + ' / ' + prec;
-  // 구 정책 비교 (출장비 12만원 × 총 건수)
-  const totalCases = basic + prec;
-  const oldRev = totalCases * 12;
-  const diff = contractRev - oldRev;
-  document.getElementById('oldPolicyRev').textContent = oldRev.toLocaleString('ko-KR') + '만원';
-  const diffEl = document.getElementById('policyDiff');
-  diffEl.textContent = (diff >= 0 ? '+' : '') + diff.toLocaleString('ko-KR') + '만원';
-  diffEl.style.color = diff >= 0 ? 'var(--ok)' : 'var(--warn)';
-  const pctEl = document.getElementById('policyDiffPct');
-  if (oldRev > 0) {
-    const pct = Math.round(diff / oldRev * 100);
-    pctEl.textContent = '(' + (pct >= 0 ? '+' : '') + pct + '%)';
-    pctEl.style.color = diff >= 0 ? 'var(--ok)' : 'var(--warn)';
-  } else {
-    pctEl.textContent = '';
-  }
-  updateTiles();
+// ── PARTS ──────────────────────────────────────────────────────
+const ROLAND_MODELS = ['DWX-42W', 'DWX-52D', 'DWX-52DCi', 'DWX-4W', 'DWX-4', 'MDX-50', 'MDX-540', 'EGX-400', 'EGX-350', '기타'];
+
+function initParts() {
+  const container = document.getElementById('partsContainer');
+  container.innerHTML = '';
+  ROLAND_MODELS.forEach(model => addPartsModelBlock(model));
+  calcPartsTotal();
 }
 
-function updateTiles() {
-  const sr = Number(document.getElementById('serviceRequests').value) || 0;
-  document.getElementById('tileSR').textContent = sr;
-}
-
-// ── RESET FORM ─────────────────────────────────────────────────
-function resetForm() {
-  const fields = ['meetingDate','attendees','facilitator','serviceIssues','nextMonthGoals','specialNotes',
-                  'ambiguousCases','gradeDecision','case1Sit','case1Res','case2Sit','case2Res','case3Sit','case3Res','hardCase'];
-  fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['basicCount','precisionCount','newContracts','canceledContracts',
-   'serviceRequests','serviceCompleted','avgResponseTime',
-   'consumableRevenue','additionalRevenue',
-   'basicDowngrade','precUpgrade','complaintCnt','escalateCnt'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = 0;
-  });
-  document.querySelectorAll('input[name=contractGoal]').forEach(r => r.checked = false);
-  document.querySelectorAll('input[name=consistency]').forEach(r => r.checked = false);
-  [1,2,3,4,5,6,7,8].forEach(i => { const el = document.getElementById('c'+i); if(el) el.checked = false; });
-  initMachineRows();
-  calcRevenue();
-}
-
-// ── EXPORT ─────────────────────────────────────────────────────
-function exportJSON() {
-  const data = collectData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'roland-care-' + currentMonth + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('JSON 파일이 다운로드됩니다.', '');
-}
-
-// ── TOAST ──────────────────────────────────────────────────────
-function toast(msg, type = '') {
-  const wrap = document.getElementById('toastWrap');
-  const el = document.createElement('div');
-  el.className = 'toast' + (type ? ' ' + type : '');
-  el.textContent = msg;
-  wrap.appendChild(el);
-  setTimeout(() => {
-    el.style.transition = 'opacity .3s'; el.style.opacity = '0';
-    setTimeout(() => el.remove(), 300);
-  }, 3000);
-}
-</script>
-</body>
-</html>
+function addPartsModelBlock(modelName) {
+  const container = document.getElementById('partsContainer');
+  const blockId = 'parts_' + modelName.replace(/[^a-zA-Z0-9]/g, '_');
+  const div = document.createElement('div');
+  div.className = 'parts-model-block collapsed';
+  div.id = blockId;
+  div.innerHTML = `
+    <div class="parts-model-head" onclick="togglePartsBlock('${blockId}')">
+      <span class="model-name">${modelName}</span>
+      <span class="model-subtotal" id="${blockId}_sub">0 원</span>
+      <span class="model-toggle">▼</span>
+    </div>
+    <div class="parts-model-body" id="${blockId}_body">
+      <div class="parts-col-head">부품명</div>
+      <div class="parts-col-head" style="text-align:right">수량</div>
+      <div class="parts-col-head" style="text-align:right">단가(원)</div
